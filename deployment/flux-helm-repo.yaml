@@ -20,7 +20,7 @@ spec:
   chart:
     spec:
       chart: waas
-      version: "1.22.0"
+      version: "1.21.0"
       sourceRef:
         kind: HelmRepository
         name: waas-charts
