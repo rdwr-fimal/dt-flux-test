@@ -1,0 +1,416 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: decodingbehaviors.waas.radware.com
+spec:
+  group: waas.radware.com
+  names:
+    categories:
+    - kwaf
+    - waas
+    kind: DecodingBehavior
+    listKind: DecodingBehaviorList
+    plural: decodingbehaviors
+    shortNames:
+    - dbhv
+    singular: decodingbehavior
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    - jsonPath: .status.hash
+      name: HashVer
+      type: string
+    - jsonPath: .status.lastUpdate
+      name: Age
+      type: date
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: DecodingBehavior define decoding behavior configuration
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DecodingBehaviorSpec spec of decoding behavior
+            properties:
+              base64Decoding:
+                description: Base64Decoding base64decoding properties
+                properties:
+                  defaultBehavior:
+                    description: DefaultBehavior default behavior
+                    properties:
+                      disableDecoding:
+                        type: boolean
+                      ignorePreDecoded:
+                        type: boolean
+                      maxDepth:
+                        default: 1
+                        format: int32
+                        maximum: 5
+                        minimum: 1
+                        type: integer
+                      validations:
+                        description: Validations define post decoding validations
+                        properties:
+                          asciiRange:
+                            items:
+                              description: ASCIIRange define the ascii range by user
+                              properties:
+                                from:
+                                  format: int32
+                                  type: integer
+                                to:
+                                  format: int32
+                                  type: integer
+                              required:
+                              - from
+                              - to
+                              type: object
+                            type: array
+                          disable:
+                            type: boolean
+                        type: object
+                    type: object
+                  headerBasedBehavior:
+                    items:
+                      description: ParameterBasedBehavior define the action when there
+                        is parameter name match
+                      properties:
+                        dontDecode:
+                          type: boolean
+                        isRegex:
+                          type: boolean
+                        maxDepth:
+                          default: 1
+                          format: int32
+                          maximum: 5
+                          minimum: 1
+                          type: integer
+                        name:
+                          type: string
+                      type: object
+                    type: array
+                  parameterBasedBehavior:
+                    items:
+                      description: ParameterBasedBehavior define the action when there
+                        is parameter name match
+                      properties:
+                        dontDecode:
+                          type: boolean
+                        isRegex:
+                          type: boolean
+                        maxDepth:
+                          default: 1
+                          format: int32
+                          maximum: 5
+                          minimum: 1
+                          type: integer
+                        name:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              contentTypes:
+                description: ContentTypes overwrite default content-type based parser
+                  selection
+                properties:
+                  disableDefaultContentRules:
+                    description: DisableDefaultContentRules when true proccess only
+                      the user specified content rules unmatched types are flaged
+                      as rfc violations
+                    type: boolean
+                  rules:
+                    description: Rules defines the user specified rules for assigning
+                      parser based on content-type
+                    items:
+                      properties:
+                        isRegex:
+                          description: isRegex defines weather the pattern shoule
+                            be an exact match or treated as regex
+                          type: boolean
+                        parser:
+                          description: Parser defines the parset to use for a matched
+                            pattern
+                          enum:
+                          - blockRequest
+                          - urlEncoded
+                          - json
+                          - multipart
+                          - plainText
+                          - xml
+                          - grpc
+                          type: string
+                        pattern:
+                          description: Pattern defines the pattern to match
+                          maxLength: 127
+                          minLength: 1
+                          type: string
+                      required:
+                      - parser
+                      - pattern
+                      type: object
+                    type: array
+                type: object
+              decompression:
+                description: Decompression defines how to handle compressed requests
+                properties:
+                  deflate:
+                    description: Defalte defines the decompression properties for
+                      content encoding 'deflate'
+                    properties:
+                      chunkSize:
+                        description: ChunkSize defines the size of the zlib’s decompressor
+                          output buffer. If not set, defaults to 4096.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                      disable:
+                        type: boolean
+                      maxInflateRatio:
+                        description: MaxInflateRatio defines the upper bound to the
+                          number of times the output buffer is allowed to be bigger
+                          than the size of the accumulated input. If not set, defaults
+                          to 100.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                    type: object
+                  enable:
+                    description: Enable determines whether to decompress a compressed
+                      body before parsing
+                    type: boolean
+                  gzip:
+                    description: Gzip defines the decompression properties for content
+                      encoding 'gzip'
+                    properties:
+                      chunkSize:
+                        description: ChunkSize defines the size of the zlib’s decompressor
+                          output buffer. If not set, defaults to 4096.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                      disable:
+                        type: boolean
+                      maxInflateRatio:
+                        description: MaxInflateRatio defines the upper bound to the
+                          number of times the output buffer is allowed to be bigger
+                          than the size of the accumulated input. If not set, defaults
+                          to 100.
+                        format: int32
+                        minimum: 1
+                        type: integer
+                    type: object
+                type: object
+              description:
+                type: string
+              parameterPollution:
+                description: ParameterPollution defines the parameter pollution detection
+                  for the parameter type
+                properties:
+                  cookies:
+                    properties:
+                      allowList:
+                        description: Defines a list of parameters for which parameter
+                          pollution is allowed
+                        items:
+                          type: string
+                        type: array
+                      enable:
+                        description: Enables the detection of duplicate parameter
+                          names
+                        type: boolean
+                    type: object
+                  headers:
+                    properties:
+                      allowList:
+                        description: Defines a list of parameters for which parameter
+                          pollution is allowed
+                        items:
+                          type: string
+                        type: array
+                      enable:
+                        description: Enables the detection of duplicate parameter
+                          names
+                        type: boolean
+                    type: object
+                  json:
+                    properties:
+                      allowList:
+                        description: Defines a list of parameters for which parameter
+                          pollution is allowed
+                        items:
+                          type: string
+                        type: array
+                      enable:
+                        description: Enables the detection of duplicate parameter
+                          names
+                        type: boolean
+                    type: object
+                  multipart:
+                    properties:
+                      allowList:
+                        description: Defines a list of parameters for which parameter
+                          pollution is allowed
+                        items:
+                          type: string
+                        type: array
+                      enable:
+                        description: Enables the detection of duplicate parameter
+                          names
+                        type: boolean
+                    type: object
+                  query:
+                    properties:
+                      allowList:
+                        description: Defines a list of parameters for which parameter
+                          pollution is allowed
+                        items:
+                          type: string
+                        type: array
+                      enable:
+                        description: Enables the detection of duplicate parameter
+                          names
+                        type: boolean
+                    type: object
+                  urlEncoded:
+                    properties:
+                      allowList:
+                        description: Defines a list of parameters for which parameter
+                          pollution is allowed
+                        items:
+                          type: string
+                        type: array
+                      enable:
+                        description: Enables the detection of duplicate parameter
+                          names
+                        type: boolean
+                    type: object
+                  xml:
+                    properties:
+                      allowList:
+                        description: Defines a list of parameters for which parameter
+                          pollution is allowed
+                        items:
+                          type: string
+                        type: array
+                      enable:
+                        description: Enables the detection of duplicate parameter
+                          names
+                        type: boolean
+                    type: object
+                type: object
+              partialRequest:
+                default: ignore
+                enum:
+                - ignore
+                - security_event
+                - inspect
+                type: string
+              urlDecoding:
+                description: UrlDecoding define the behavior for decoding URL Encoded
+                  data in requests
+                properties:
+                  parameterDecoding:
+                    description: ParameterDecoding define the behavior for decoding
+                      parameters that contain data that is URL Encoded
+                    properties:
+                      defaultBehavior:
+                        description: DefaultBehavior define the default behavior
+                        properties:
+                          disableDecoding:
+                            type: boolean
+                          maxDepth:
+                            format: int32
+                            maximum: 5
+                            minimum: 1
+                            type: integer
+                        type: object
+                      parameterBasedBehavior:
+                        description: ParameterBasedBehavior define the behavior when
+                          there is parameter name match
+                        properties:
+                          disableDecoding:
+                            type: boolean
+                          maxDepth:
+                            format: int32
+                            maximum: 5
+                            minimum: 1
+                            type: integer
+                          parameters:
+                            items:
+                              description: Parameters define the parameters to match
+                              properties:
+                                isRegex:
+                                  type: boolean
+                                name:
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            type: array
+                        type: object
+                    type: object
+                  uriDecoding:
+                    description: UriDecoding  define the behavior for decoding URIs
+                      that contain data that is URL Encoded
+                    properties:
+                      disableDecoding:
+                        type: boolean
+                      maxDepth:
+                        format: int32
+                        maximum: 5
+                        minimum: 1
+                        type: integer
+                    type: object
+                type: object
+            type: object
+          status:
+            description: DecodingBehaviorStatus holds the status of decodingBehavior
+              crd
+            properties:
+              hash:
+                type: string
+              lastUpdate:
+                format: date-time
+                type: string
+              message:
+                type: string
+              state:
+                description: DecodingBehaviorState is an enum for the possible states
+                type: string
+            required:
+            - hash
+            - lastUpdate
+            - state
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

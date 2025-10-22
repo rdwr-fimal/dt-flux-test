@@ -1,0 +1,197 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: tokenvalidations.waas.radware.com
+spec:
+  group: waas.radware.com
+  names:
+    categories:
+    - kwaf
+    - waas
+    kind: TokenValidation
+    listKind: TokenValidationList
+    plural: tokenvalidations
+    shortNames:
+    - tkn
+    singular: tokenvalidation
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    - jsonPath: .status.hash
+      name: HashVer
+      type: string
+    - jsonPath: .status.lastUpdate
+      name: Age
+      type: date
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: 'TokenValidation define token extraction engine type config (for
+          ex.: JWT)'
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TokenValidationSpec spec of token validation extraction type
+            properties:
+              jwt:
+                description: 'JwtSpec jwt properties. The default location to extract
+                  JWT is from HTTP header: Authorization: Bearer <token> and query
+                  parameter key access_token as: /path?access_token=<JWT>'
+                properties:
+                  fromCookies:
+                    description: FromCookies specifies the cookies to extract JWT
+                      from
+                    items:
+                      type: string
+                    minItems: 1
+                    type: array
+                  fromHeaders:
+                    description: FromHeaders specifies the HTTP headers to extract
+                      JWT from
+                    items:
+                      description: FromHeader Http header specification
+                      properties:
+                        name:
+                          description: Name specifies the header name
+                          minLength: 1
+                          type: string
+                        valuePrefix:
+                          description: ValuePrefix specifies the header value prefix.
+                            For example, "Bearer "
+                          minLength: 1
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    minItems: 1
+                    type: array
+                  fromParams:
+                    description: FromParams specifies the query parameters to extract
+                      JWT from
+                    items:
+                      type: string
+                    minItems: 1
+                    type: array
+                  remoteJwks:
+                    description: RemoteJwks specifies the remote HTTP server to fetch
+                      the JWKS from and the cache duration
+                    properties:
+                      cacheDuration:
+                        description: 'CacheDuration specifies the duration after which
+                          the cached JWKS should be expired: sequence of decimal numbers,
+                          each with optional fraction and a unit suffix, such as "300ms"
+                          or "2m45.73s". Valid time units are "ns", "us" (or "µs"),
+                          "ms", "s", "m", "h". If not specified, default cache duration
+                          is 5 minutes'
+                        type: string
+                      httpUri:
+                        description: HttpUri specifies the HTTP URI to fetch the JWKS
+                        properties:
+                          cluster:
+                            description: Cluster specifies how the uri is to be fetched
+                            properties:
+                              address:
+                                description: Address specifies the socket adress.
+                                  If not specified, set to url hostname
+                                type: string
+                              dnsLookupFamily:
+                                description: |-
+                                  The JWKS server DNS IP address resolution policy by the DNS resolver. If this setting is not specified, the value defaults to Auto.
+                                  Auto - perform a lookup for addresses in the IPv6 family and fallback to a lookup for addresses in the IPv4 family.
+                                  V4Only - only perform a lookup for addresses in the IPv4 family.
+                                  V6Only - only perform a lookup for addresses in the IPv6 family.
+                                  V4Preferred - perform a lookup for addresses in the IPv4 family and fallback to a lookup for addresses in the IPv6 family.
+                                  All - perform a lookup for both IPv4 and IPv6 families, and return all resolved addresses.
+                                enum:
+                                - Auto
+                                - V4Only
+                                - V6Only
+                                - V4Preferred
+                                - All
+                                type: string
+                              sni:
+                                description: SNI specifies the string to use when
+                                  creating TLS backend connections. Only configurable
+                                  for https urls. If not specified, set to url hostname
+                                type: string
+                            type: object
+                          timeout:
+                            description: 'Timeout specifies the maximum duration that
+                              a response can take to arrive upon request: sequence
+                              of decimal numbers, each with optional fraction and
+                              a unit suffix, such as "300ms" or "2m45.73s". Valid
+                              time units are "ns", "us" (or "µs"), "ms", "s", "m",
+                              "h"'
+                            type: string
+                          url:
+                            description: 'Url specifies the HTTP server URL. It should
+                              be a full FQDN with protocol (http/https), host and
+                              path: [[(http/https)] ":" ["//" host [":" port]] path
+                              ["?" query] ["#" fragment]]. Default protocol port is
+                              used if port is not specified. If hostname is an IPv6
+                              address, enclose it in square brackets to alleviate
+                              conflicts'
+                            minLength: 1
+                            type: string
+                        required:
+                        - timeout
+                        - url
+                        type: object
+                    required:
+                    - httpUri
+                    type: object
+                required:
+                - remoteJwks
+                type: object
+            type: object
+          status:
+            description: TokenValidationStatus holds the status of TokenValidation
+              crd
+            properties:
+              hash:
+                type: string
+              lastUpdate:
+                format: date-time
+                type: string
+              message:
+                type: string
+              state:
+                description: TokenValidationState is an enum for the possible states
+                type: string
+            required:
+            - hash
+            - lastUpdate
+            - state
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

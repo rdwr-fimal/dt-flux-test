@@ -1,0 +1,161 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: actors.waas.radware.com
+spec:
+  group: waas.radware.com
+  names:
+    categories:
+    - kwaf
+    - waas
+    kind: Actor
+    listKind: ActorList
+    plural: actors
+    shortNames:
+    - act
+    singular: actor
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    - jsonPath: .status.hash
+      name: HashVer
+      type: string
+    - jsonPath: .status.lastUpdate
+      name: Age
+      type: date
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: Actor is the custom resource for the waas security actor extraction
+          method
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              ActorSpec contains the method used to extract the Actor's value.
+              Only one extraction method is allowed.
+            properties:
+              allOf:
+                properties:
+                  ids:
+                    items:
+                      description: ActorID is the Name (and optionally Namespace)
+                        of actor
+                      properties:
+                        name:
+                          description: Name is the k8s resource name
+                          maxLength: 63
+                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                          type: string
+                        namespace:
+                          description: Namespace is the k8s resource namespace. if
+                            empty inherits from referrer
+                          maxLength: 63
+                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    minItems: 1
+                    type: array
+                  sourceIP:
+                    type: boolean
+                required:
+                - ids
+                type: object
+              basicAuth:
+                description: BasicAuth specifies that the Actor's value is extracted
+                  from the base64 decoded value user name. Set with empty struct {}
+                type: object
+              cookie:
+                description: Cookie specifies the cookie name from which to extract
+                  the Actor's value
+                properties:
+                  name:
+                    type: string
+                required:
+                - name
+                type: object
+              jwt:
+                description: JWT species the JWT claim from which to extract the Actor's
+                  value. JWT decoding and validation should be specified in the appropriate
+                  DecodingBehavior's jwtValidation section
+                properties:
+                  claim:
+                    type: string
+                required:
+                - claim
+                type: object
+              valueFromHeader:
+                description: ValueFromHeader specifies the header name from which
+                  to extract the Actor's value
+                minLength: 1
+                type: string
+              xfcc:
+                description: |-
+                  XFCC specifies how to extarct the Actor's value from a header contianing the X-Forwarded-Client-Cert information.
+                  HeaderName is opptional with default x-forwarded-client-cert
+                  Position is optional with default 0
+                properties:
+                  headerName:
+                    type: string
+                  key:
+                    type: string
+                  position:
+                    format: int32
+                    type: integer
+                required:
+                - key
+                type: object
+            type: object
+          status:
+            description: ActorStatus actor status definition
+            properties:
+              hash:
+                type: string
+              lastUpdate:
+                format: date-time
+                type: string
+              message:
+                type: string
+              state:
+                description: ActorState is an enum for the possible Actor states
+                type: string
+            required:
+            - hash
+            - lastUpdate
+            - state
+            type: object
+        required:
+        - metadata
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

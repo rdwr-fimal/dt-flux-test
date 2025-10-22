@@ -1,0 +1,304 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: waas-charts
+  namespace: kwaf
+spec:
+  url: https://artifactory.devops.telekom.de/artifactory/dtt-taomy-taomy07-dev-helm/
+  interval: 1m
+  secretRef:
+    name: helm-repo-cred
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: waas
+  namespace: kwaf
+spec:
+  # serviceAccountName: m2m-sa
+  interval: 1m
+  chart:
+    spec:
+      chart: waas
+      version: "1.22.0"
+      sourceRef:
+        kind: HelmRepository
+        name: waas-charts
+        namespace: kwaf
+  values:
+    global:
+      kibanaCredEnabled: true
+      elasticStorageManagement:
+          policy: poc
+      systemMode: ext-authz
+      useNodePort: false
+      image:
+        pullPolicy: IfNotPresent
+        registry: devart01:8081/waas-img-reg
+        version: :1.22.0
+      signaturesImage:
+        registry: devart01:8081/signatures-release-docker
+        version: :553
+      preserveJobs: false
+      controller:
+        serviceAppProtocol: grpc
+      ratelimiter:
+        serviceAppProtocol: grpc
+      eventFetcher:
+        serviceAppProtocol: http
+      profilesCrud:
+        serviceAppProtocol: http
+      gui:
+        serviceAppProtocol: https
+      logstash:
+        serviceAppProtocol: http
+
+    # TLS Settings - turn all TLS configurations other than
+    # elasticsearch, gui and validation controller off - 
+    # relying on istio mesh
+
+    waas-rate-limiter:
+      tls:
+        server:
+          enabled: false
+          mounts:
+          volumes:
+        clients:
+          redis:
+            enabled: false
+            mounts:
+            volumes:
+          rateLimiter:
+            enabled: false
+            mounts:
+            volumes:
+          controller:
+            enabled: false
+            mounts:
+            volumes:
+
+    waas-controller:
+      tls:
+        server:
+          enabled: false
+          mounts:
+          volumes:
+        clients:
+          logagent:
+            enabled: false
+            mounts:
+            volumes:
+          nats:
+            enabled: false
+            mounts:
+            volumes:
+          fluentbit:
+            enabled: false
+            mounts:
+            volumes:
+          rateLimiter:
+            enabled: false
+            mounts:
+            volumes:
+
+    waas-enforcer:
+      configType: mapping
+      configName: waas-ext-auth-mapping
+      configNamespace: test
+      tls:
+        clients:
+          logagent:
+            logstash:
+              enabled: false
+              mounts:
+              volumes:
+            nats:
+              enabled: false
+              mounts:
+              volumes:
+          fluentbit:
+            enabled: false
+            mounts:
+            volumes:
+          rateLimiter:
+            enabled: false
+            mounts:
+            volumes:
+          controller:
+            enabled: false
+            mounts:
+            volumes:
+
+    waas-nats:
+      tls:
+        server:
+          enabled: false
+        clusters:
+          enabled: false
+        clients:
+          enabled: false
+
+    waas-api-discovery:
+      tls:
+        clients:
+          nats:
+            enabled: false
+          profilescrud:
+            enabled: false
+
+    waas-events-fetcher:
+      tls:
+        server:
+          enabled: false
+          mounts:
+          volumes:
+        clients:
+          eventsFetcher:
+            enabled: false
+            mounts:
+            volumes:
+          elasticsearch:
+            verify: false
+
+    waas-gui:
+      tls:
+        server:
+          enabled: true
+          mounts:
+            - name: gui-server-volume
+              mountPath: /etc/gui/server
+          # volume mounts containing certificates and keys
+          volumes:
+            - name: gui-server-volume
+              secret:
+                secretName: waas-gui-server-secret
+        clients:
+          eventsFetcher:
+            enabled: false
+            clientAuth: false
+            mounts:
+            volumes:
+          profiles:
+            enabled: false
+            clientAuth: false
+            mounts:
+            volumes:
+
+    waas-logstash:
+      enabled: true
+      replicaCount: 1
+      jvmMemorySize: 1000m
+      batchSize: 100
+      workers: 2
+      tls:
+        server:
+          enabled: false
+          mounts:
+          volumes:
+        clients:
+          elasticsearch:
+            verify: false
+            mounts: 
+            volumes: 
+
+    waas-profiles-crud:
+      tls:
+        server:
+          enabled: false
+          mounts:
+          volumes:
+        clients:
+          profiles:
+            enabled: false
+            mounts:
+            volumes:
+
+    waas-webddos:
+      tls:
+        clients:
+          nats:
+            enabled: false
+            mounts:
+            volumes:
+
+    waas-redis:
+      tls:
+        server:
+          enabled: false
+          mounts:
+          volumes:
+        clients:
+          redis:
+            enabled: false
+            mounts:
+            volumes:
+
+    waas-elasticsearch:
+      enabled: true
+      replicaCount: 1
+      processors: 1
+      persistentStorage:
+        type: none # options for persistance storage types: kind, longhorn, azure/eks/gke
+        size: 500Mi
+      configureMmap: false
+      tls:
+        server:
+          # transport TLS between elastic nodes
+          transport:
+            # NOTE all file locations are relative to ES_PATH_CONF
+            # certificate file location, required
+            certificate: "{{ .Values.ES_PATH_CONF }}/http/server/tls.crt"
+            # key file location, required
+            key: "{{ .Values.ES_PATH_CONF }}/http/server/tls.key"
+            # ca certificate file location
+            ca: "{{ .Values.ES_PATH_CONF }}/ca/ca.crt"
+          # http TLS between elastic and users
+          http:
+            # NOTE all file locations are relative to ES_PATH_CONF
+            # certificate file location, required
+            certificate: "{{ .Values.ES_PATH_CONF }}/http/server/tls.crt"
+            # key file location, required
+            key: "{{ .Values.ES_PATH_CONF }}/http/server/tls.key"
+            # ca certificate file location
+            ca: "{{ .Values.ES_PATH_CONF }}/ca/ca.crt"
+          mounts: |-
+            # NOTE all mount paths must be under ES_PATH_CONF
+            - name: ca-volume
+              mountPath: "{{ .Values.ES_PATH_CONF }}/ca"
+            - name: http-secret-server-volume
+              mountPath: "{{ .Values.ES_PATH_CONF }}/http/server"
+          # volume mounts containing certificates and keys
+          volumes:
+            - name: ca-volume
+              configMap:
+                name: waas-ca-config
+            - name: http-secret-server-volume
+              secret:
+                secretName: waas-elasticsearch-exposed-server-secret
+
+    waas-validationcontroller:
+      tls:
+        server:
+          enabled: true
+          clientAuth: false
+          certificate: /etc/validation-controller/server/tls.crt
+          key: /etc/validation-controller/server/tls.key
+          ca: /etc/validation-controller/ca/ca.crt
+          verify: false
+          mounts:
+            - name: validation-controller-server-volume
+              mountPath: /etc/validation-controller/server
+            - name: ca-volume
+              mountPath: /etc/validation-controller/ca
+          # volume mounts containing certificates and keys
+          volumes:
+            - name: validation-controller-server-volume
+              secret:
+                secretName: waas-validation-controller-server-secret
+            - name: ca-volume
+              configMap:
+                name: waas-ca-config
+        webhook:
+          caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURCekNDQWUrZ0F3SUJBZ0lVQXh5UlRkUEpScEtzRjRubndLR0JMUjVULzhvd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0V6RVJNQThHQTFVRUF3d0lhM2RoWmk1emRtTXdIaGNOTWpVeE1ERTJNVFUwTURReldoY05Nall4TURFMgpNVFUwTURReldqQVRNUkV3RHdZRFZRUUREQWhyZDJGbUxuTjJZekNDQVNJd0RRWUpLb1pJaHZjTkFRRUJCUUFECmdnRVBBRENDQVFvQ2dnRUJBTWFFQUF0RTk0Wk1lUzBaR2xBaVI4S0ZMQTI3ZnFpNEFFYXpRQnRnNmJReHpCa0IKbHc1WXFBUTl6dUJMRVY4c1ZCVFFnVTRkbEcvcGtCWmZ3d0FyU3hrS1p3bEFTWWExc0t1ZHRDUXZmcmh0a2o2cQo5cmFSV2NEeGVlTGVFYlBudnVIQmFIcnhxWVB6a2ZaU3czNjF2N1pyV3Qza0hhcktqSFUvWGlLNHNOTzJyc0Q5CktFZTE1UVhyNWlzNjRzanFLR1FrM0tHOGVFSFQ5R1gwZ2hjMTc2QmgxU1Q2d0s5YVg3NnZxbEFDSWdMRGQ1bUMKYVN3T3IvMWFVWGZMQUhCRzJBaFBGbUlVOGZCdGtMeGNKcnN3cWYxcTUyZGgrS2ZtTG1EdHQ3Ti9KVG5MWk1WeAorb2MyUTQ1M2I3T1NHa0RQZnhjWkY3dCtVdWgzRWlZWk5ZZEJ6UThDQXdFQUFhTlRNRkV3SFFZRFZSME9CQllFCkZFY05YNmx2QkFtVDNwVVVMSTFmb0ZuWkZ4M1pNQjhHQTFVZEl3UVlNQmFBRkVjTlg2bHZCQW1UM3BVVUxJMWYKb0ZuWkZ4M1pNQThHQTFVZEV3RUIvd1FGTUFNQkFmOHdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBRHJHTzZQcQpLSXJacFVKMXc3bFFQb2E3SGFRRVVEU245YWdSQUhLY1Nud0dIU09XOWwzRUpUWkQ1dndaRE1oYlR1dUdsZFFYCi9vMTBCd1luVGttbW1xTW1GSHpOelI2TDFMZ05lclZQcTB5MHYyUXJET2xxRWpGTEhWOTd3Ky8zZUZBQXUrKzkKT3JkZnFUUGtmVFZ6QUtJR0FYank1czJHTlFOcWU0emhwV2VPRnU3M1lSckN1bHV2QUpVRFBmM2ZVdE1mNmlaWAplTWw4QWdzRHRqaDA3Sy9XMVVyL2FOb2xyKzBEeFFlem9meDZ0bDVhOUo5TFpxVjUvZjNwTlNHMkFvTW5XKzNLCjhkNWJPSjcwRUlvelRtL29BWEl0ZmFLVFNRTDE0Ty9HNm4zNUw4ZDgzRU52a29uQWc4S2NEY1BVSkFpNS9oR0cKbndYUkZ0dU9FeHd4cUxRPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+
+
