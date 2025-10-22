@@ -4,11 +4,10 @@ metadata:
   name: waas-charts
   namespace: kwaf
 spec:
-  type: oci
-  url: oci://localhost/waas_helms/waas
+  url: https://artifactory.devops.telekom.de/artifactory/dtt-taomy-taomy07-dev-helm
   interval: 1m
   secretRef:
-    name: harbor-helm-repo
+    name: helm-repo-cred
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -20,7 +19,7 @@ spec:
   interval: 1m
   chart:
     spec:
-      chart: waas-charts
+      chart: waas_helm3
       version: 1.22.0
       sourceRef:
         kind: HelmRepository
