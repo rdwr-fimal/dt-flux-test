@@ -6,5 +6,6 @@ metadata:
 spec:
   url: oci://localhost/waas_helms/waas
   interval: 1m
+  type: oci
   # secretRef:
   #   name: waas-helm-charts
