@@ -1,0 +1,158 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: sourcegroups.waas.radware.com
+spec:
+  group: waas.radware.com
+  names:
+    categories:
+    - kwaf
+    - waas
+    kind: SourceGroup
+    listKind: SourceGroupList
+    plural: sourcegroups
+    shortNames:
+    - sg
+    singular: sourcegroup
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    - jsonPath: .status.hash
+      name: HashVer
+      type: string
+    - jsonPath: .status.lastUpdate
+      name: Age
+      type: date
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: SourceGroup is the custom resource for the waas security source-group
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              SourceGroupSpec is a holder for request origin metadata definition
+              It can hold a request origin country group, CIDRs range, Address List, Address Ranges, etc..
+              This is majorly used to be attached to classifier to add request constrains based on sourceGroup definitions
+            properties:
+              actors:
+                description: Actors is a list of actors with permissive list of values
+                  associated to this sourceGroup
+                items:
+                  properties:
+                    name:
+                      description: Name is the k8s resource name
+                      maxLength: 63
+                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                      type: string
+                    namespace:
+                      description: Namespace is the k8s resource namespace. if empty
+                        inherits from referrer
+                      maxLength: 63
+                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                      type: string
+                    values:
+                      description: Values is a list of permissive values (strings)
+                        associated to Actor that is identified by ActorID
+                      items:
+                        type: string
+                      minItems: 1
+                      type: array
+                  required:
+                  - name
+                  - values
+                  type: object
+                type: array
+              addressRanges:
+                items:
+                  properties:
+                    from:
+                      description: Holds IPv4/IPv6 IP address
+                      type: string
+                    to:
+                      description: Holds IPv4/IPv6 IP address
+                      type: string
+                  required:
+                  - from
+                  - to
+                  type: object
+                type: array
+              addresses:
+                items:
+                  description: Holds IPv4/IPv6 IP address
+                  type: string
+                type: array
+              cidrs:
+                items:
+                  description: Holds IPv4/IPv6 CIDR
+                  type: string
+                type: array
+              description:
+                type: string
+              geolocations:
+                items:
+                  description: Geolocation is a 2bytes string that uniquely define
+                    country per ISO 3166
+                  maxLength: 2
+                  type: string
+                type: array
+              proxies:
+                items:
+                  description: Proxy allows user to select different types of IPs
+                    like TOR, VPN, DCH, PUB, WEB, SES, RES, for now we support TOR
+                    only.
+                  maxLength: 3
+                  type: string
+                type: array
+            type: object
+          status:
+            description: ProfileStatus security policy status definition
+            properties:
+              hash:
+                type: string
+              lastUpdate:
+                format: date-time
+                type: string
+              message:
+                type: string
+              state:
+                description: SourceGroupState is an enum for the possible policy states
+                type: string
+            required:
+            - hash
+            - lastUpdate
+            - state
+            type: object
+        required:
+        - metadata
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

@@ -1,0 +1,137 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: patterngroups.waas.radware.com
+spec:
+  group: waas.radware.com
+  names:
+    categories:
+    - kwaf
+    - waas
+    kind: PatternGroup
+    listKind: PatternGroupList
+    plural: patterngroups
+    shortNames:
+    - pat
+    singular: patterngroup
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    - jsonPath: .status.hash
+      name: HashVer
+      type: string
+    - jsonPath: .status.lastUpdate
+      name: Age
+      type: date
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: PatternGroup define Pattern Group configuration
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            items:
+              description: |-
+                Pattern - holds one pattern properties.
+                Pattern content is identical to radware.com/waas/pkg/model.CustomRule
+              properties:
+                description:
+                  type: string
+                expectedLocations:
+                  description: ExpectedLocations specifies the zone of the match
+                  items:
+                    description: ScanZone indicated the Expected loacation checkbox-
+                      where the enforcer should make the match with the 'pattern'
+                    enum:
+                    - uri
+                    - headers
+                    - body
+                    - parameters
+                    type: string
+                  type: array
+                headerName:
+                  description: HeaderName specifies the parameter \ header name where
+                    the match is
+                  type: string
+                id:
+                  type: string
+                parameters:
+                  description: Parameters specifies the parameters name and values
+                    where the match is
+                  items:
+                    description: Parameters indicates the parameters
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  type: array
+                patternProp:
+                  description: PatternProp specifies a named regex or literal to search
+                    for in ExpectedLocations
+                  properties:
+                    isRegex:
+                      type: boolean
+                    pattern:
+                      type: string
+                  required:
+                  - pattern
+                  type: object
+              required:
+              - id
+              - patternProp
+              type: object
+            type: array
+          status:
+            description: PatternGroupStatus holds the status of patternGroup crd
+            properties:
+              hash:
+                type: string
+              lastUpdate:
+                format: date-time
+                type: string
+              message:
+                type: string
+              state:
+                description: PatternGroupState is an enum for the possible states
+                type: string
+            required:
+            - hash
+            - lastUpdate
+            - state
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

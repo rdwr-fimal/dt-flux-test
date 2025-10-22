@@ -1,0 +1,154 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: sigfilters.waas.radware.com
+spec:
+  group: waas.radware.com
+  names:
+    categories:
+    - kwaf
+    - waas
+    kind: SigFilter
+    listKind: SigFilterList
+    plural: sigfilters
+    shortNames:
+    - sigf
+    singular: sigfilter
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    - jsonPath: .status.hash
+      name: HashVer
+      type: string
+    - jsonPath: .status.lastUpdate
+      name: Age
+      type: date
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: SigFilter defines the filtering of signatures by categories
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: SigFilterSpec Signature Filter specification
+            properties:
+              categories:
+                description: Categories list of categories, based on which signature
+                  filtering is performed.
+                items:
+                  properties:
+                    name:
+                      description: Name specifies the name of the category by which
+                        to filter
+                      enum:
+                      - ThreatType
+                      - ServerOs
+                      - WebServer
+                      - Framework
+                      - Language
+                      - Database
+                      - ConfidenceLevel
+                      - AttackSeverity
+                      - LastModified
+                      - CVENumber
+                      type: string
+                    values:
+                      description: Values specifies the list of category values by
+                        which to filter
+                      items:
+                        type: string
+                      minItems: 1
+                      type: array
+                  required:
+                  - name
+                  - values
+                  type: object
+                type: array
+              description:
+                type: string
+              lastModified:
+                description: LastModified specifies the last modification time by
+                  which to filter
+                properties:
+                  date:
+                    description: 'Date specifies the date of the last modification
+                      by which to filter, supported format is: "YYYY.MM.DD", for example
+                      1970.01.01'
+                    pattern: ^((1\d{3}|2\d{3})\.([0-9]|0[1-9]|1[0-2])\.([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0-1]))$
+                    type: string
+                  operator:
+                    description: 'Operator specifies the comparison (relational) operator
+                      by which to compare to the specified date, valid options are:
+                      ["==", "<=", ">=", ">", "<"]'
+                    enum:
+                    - ==
+                    - <=
+                    - '>='
+                    - '>'
+                    - <
+                    type: string
+                required:
+                - date
+                - operator
+                type: object
+              mode:
+                description: |-
+                  Mode specifies the operational method by which to filter.
+                  "Include" will include all signatures that match the specified category criteria.
+                  "Exclude" will exclude all signatures that match the specified category criteria, effectively including those that don't.
+                enum:
+                - Include
+                - Exclude
+                type: string
+            required:
+            - mode
+            type: object
+          status:
+            properties:
+              hash:
+                type: string
+              lastUpdate:
+                format: date-time
+                type: string
+              message:
+                type: string
+              state:
+                description: State is an enum for the possible SigFilterStat states
+                type: string
+            required:
+            - hash
+            - lastUpdate
+            - state
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

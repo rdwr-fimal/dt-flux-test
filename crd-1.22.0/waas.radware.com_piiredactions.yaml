@@ -1,0 +1,106 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: piiredactions.waas.radware.com
+spec:
+  group: waas.radware.com
+  names:
+    categories:
+    - kwaf
+    - waas
+    kind: PIIRedaction
+    listKind: PIIRedactionList
+    plural: piiredactions
+    shortNames:
+    - piir
+    singular: piiredaction
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    - jsonPath: .status.hash
+      name: HashVer
+      type: string
+    - jsonPath: .status.lastUpdate
+      name: Age
+      type: date
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: PIIRedaction define PII redaction configuration
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: PIIRedactionSpec spec of PII Redaction
+            properties:
+              piis:
+                items:
+                  description: PIIFields holds the regex or literal terms to search
+                    for in the security event.
+                  properties:
+                    elementName:
+                      type: string
+                    isRegex:
+                      type: boolean
+                  required:
+                  - elementName
+                  type: object
+                minItems: 1
+                type: array
+              redactionChar:
+                description: RedactionChar specifies the character to use for redaction
+                  of the text matching a defined pattern
+                maxLength: 1
+                type: string
+            required:
+            - piis
+            type: object
+          status:
+            description: PIIRedactionStatus holds the status of PII Redaction crd
+            properties:
+              hash:
+                type: string
+              lastUpdate:
+                format: date-time
+                type: string
+              message:
+                type: string
+              state:
+                description: PIIRedactionState is an enum for the possible states
+                type: string
+            required:
+            - hash
+            - lastUpdate
+            - state
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

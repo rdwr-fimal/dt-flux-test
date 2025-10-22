@@ -1,0 +1,1795 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: profiles.waas.radware.com
+spec:
+  group: waas.radware.com
+  names:
+    categories:
+    - kwaf
+    - waas
+    kind: Profile
+    listKind: ProfileList
+    plural: profiles
+    shortNames:
+    - pf
+    singular: profile
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    - jsonPath: .status.hash
+      name: HashVer
+      type: string
+    - jsonPath: .status.lastUpdate
+      name: Age
+      type: date
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: Profile is the custom resource for the waas security profile
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ProfileSpec security policy specification
+            properties:
+              policies:
+                items:
+                  description: Policy contains security policy for single protected
+                    entity (usually service at port == envoy listener)
+                  properties:
+                    classifiers:
+                      items:
+                        description: |-
+                          Classifier is used to differentiate between requests
+                          based on their parameters and/or the different parts of the protected web app which they address.
+                          By doing this they enable application of specific protections to requests that match the classifier they're linked to.
+                        properties:
+                          cookies:
+                            description: We block cookies where cookie-key or cookie-value
+                              is empty.
+                            items:
+                              description: |-
+                                This struct holds header/cookie key-value match selectors.
+                                A Key and Value defines that there is a match if the header or cookie with the specified value exists.
+                              properties:
+                                key:
+                                  type: string
+                                value:
+                                  type: string
+                              required:
+                              - key
+                              type: object
+                            minItems: 1
+                            type: array
+                          decodingBehaviorId:
+                            description: DecodingBehaviorID the Name/Namespace of
+                              decoding behavior CR that is attached to this classifier
+                            properties:
+                              name:
+                                pattern: ^[0-9a-zA-Z_-]+$
+                                type: string
+                              namespace:
+                                pattern: ^[0-9a-zA-Z_-]+$
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          headers:
+                            description: A Key without a value defines that there
+                              is a match if the header exists.
+                            items:
+                              description: |-
+                                This struct holds header/cookie key-value match selectors.
+                                A Key and Value defines that there is a match if the header or cookie with the specified value exists.
+                              properties:
+                                isRegex:
+                                  type: boolean
+                                key:
+                                  type: string
+                                value:
+                                  type: string
+                              required:
+                              - key
+                              type: object
+                            minItems: 1
+                            type: array
+                          hostname:
+                            type: string
+                          id:
+                            type: string
+                          operatorEmail:
+                            type: string
+                          path:
+                            description: PathMatch specifies how to match to the request
+                              path
+                            properties:
+                              operand:
+                                description: MatchOperand speficies how to match the
+                                  path to the request URI
+                                enum:
+                                - Path
+                                - Regex
+                                - Prefix
+                                type: string
+                              value:
+                                type: string
+                            required:
+                            - operand
+                            - value
+                            type: object
+                          protectionId:
+                            description: ProtectionID the ID of the protection that
+                              is applied for this classifier
+                            pattern: ^[a-zA-Z0-9-_]+$
+                            type: string
+                          signatureFilteringId:
+                            description: SignatureFilteringID the Name/Namespace of
+                              SignatureFiltering CR that is attached to this classifier
+                            properties:
+                              name:
+                                maxLength: 63
+                                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                type: string
+                              namespace:
+                                maxLength: 63
+                                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          sourceGroupId:
+                            description: SourceGroupID the Name/Namespace of sourceGroup
+                              CR that is attached to this classifier
+                            properties:
+                              name:
+                                pattern: ^[0-9a-zA-Z_-]+$
+                                type: string
+                              namespace:
+                                pattern: ^[0-9a-zA-Z_-]+$
+                                type: string
+                            required:
+                            - name
+                            type: object
+                        required:
+                        - hostname
+                        - id
+                        - path
+                        - protectionId
+                        type: object
+                      minItems: 1
+                      type: array
+                    decodingBehaviorId:
+                      description: DecodingBehaviorID the Name/Namespace of decoding
+                        behavior CR that is attached to this policy
+                      properties:
+                        name:
+                          pattern: ^[0-9a-zA-Z_-]+$
+                          type: string
+                        namespace:
+                          pattern: ^[0-9a-zA-Z_-]+$
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    name:
+                      type: string
+                    operatorEmail:
+                      type: string
+                    piiRedactionId:
+                      description: PIIRedactionID the Name/Namespace of PII redaction
+                        CR that is attached to this policy
+                      properties:
+                        name:
+                          pattern: ^[0-9a-zA-Z_-]+$
+                          type: string
+                        namespace:
+                          pattern: ^[0-9a-zA-Z_-]+$
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    protections:
+                      items:
+                        description: ProtectionConfig defines protection configuration
+                        properties:
+                          action:
+                            description: ProtectionAction defines the protection's
+                              action - Inspect (default), Block, Block_no_Report or
+                              Bypass
+                            enum:
+                            - Inspect
+                            - Block
+                            - Block_no_Report
+                            - Bypass
+                            type: string
+                          actionHttpResponseCode:
+                            description: ActionHttpResponseCode allows you to specify
+                              a custom HTTP response code to return when the action
+                              is set to either BLOCK or BLOCK_NO_REPORT.
+                            format: int32
+                            type: integer
+                          activityTracking:
+                            description: ActivityTracking tracks the activity of a
+                              Source and limits access to Resources to protect against
+                              DDoS and scrapping attacks, and to enforce and manage
+                              API quotas.
+                            properties:
+                              actors:
+                                description: Actors specifies the Actors for which
+                                  to track their activity
+                                items:
+                                  description: Activity Tracking configuration of
+                                    actors
+                                  properties:
+                                    blockCacheDisabled:
+                                      description: BlockCacheDisabled determines if
+                                        block key caching is enabled for the actor
+                                      type: boolean
+                                    blockPeriod:
+                                      description: BlockPeriod specifies the amount
+                                        of time the source will be blocked for after
+                                        reaching the specified Rate.
+                                      pattern: ^[0-9]+[smhd]$
+                                      type: string
+                                    disable:
+                                      description: Disable determines if to disable
+                                        rate counting for the actor
+                                      type: boolean
+                                    excludes:
+                                      description: Excludes specifies what to exclude
+                                        from limitation of access to resources (Sources
+                                        and/or Resources)
+                                      items:
+                                        description: RateLimiterExcludeRule struct
+                                          defines the Activity Tracking/Violation
+                                          Rating exclude pattern
+                                        properties:
+                                          isResourceRegex:
+                                            description: When true, resource is regex.
+                                              When false, resource is string treated
+                                              as 'path' to be excluded.
+                                            type: boolean
+                                          resource:
+                                            description: Resource specifies the resource(s)
+                                              which would be excluded from protection
+                                            type: string
+                                          source:
+                                            description: Source specifies the source(s)
+                                              which would be excluded from protection
+                                            type: string
+                                        type: object
+                                      type: array
+                                    name:
+                                      description: Name is the k8s resource name
+                                      maxLength: 63
+                                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                      type: string
+                                    namespace:
+                                      description: Namespace is the k8s resource namespace.
+                                        if empty inherits from referrer
+                                      maxLength: 63
+                                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                      type: string
+                                    rate:
+                                      description: Rate specifies the number of HTTP
+                                        transactions a single source can perform during
+                                        the specified unit of time
+                                      pattern: ^[1-9][0-9]*[smhd]$
+                                      type: string
+                                    rateSyncFrequency:
+                                      description: |-
+                                        RateSyncFrequency specifies how often request rates are synchronized with upstream cache (e.g. '10' means synchronization occurs every 10 requests) - It's allowed to be set only when not setting blockPeriod.
+                                        If configured smaller than 1 or omitted, 1 will be used instead.
+                                      format: int32
+                                      type: integer
+                                  required:
+                                  - name
+                                  type: object
+                                type: array
+                              addRetryAfterHeader:
+                                description: AddRetryAfterHeader determines whether
+                                  to include the Retry-After response header with
+                                  the returned TTL in the response.
+                                type: boolean
+                              blockCacheDisabled:
+                                description: BlockCacheDisabled determines if block
+                                  key caching is enabled for the default Source IP
+                                  actor
+                                type: boolean
+                              blockIfAllCached:
+                                description: BlockIfAllCached determines if to block
+                                  if any of the Actors is in cache, or if all of them
+                                  are
+                                type: boolean
+                              blockPeriod:
+                                description: BlockPeriod specifies the amount of time
+                                  the source will be blocked for after reaching the
+                                  specified Rate.
+                                pattern: ^[0-9]+[smhd]$
+                                type: string
+                              countStatic:
+                                description: CountStatic determines if requests to
+                                  static content should be taken into account
+                                type: boolean
+                              disable:
+                                description: Disable determines if to disable rate
+                                  counting for the Source IP
+                                type: boolean
+                              excludes:
+                                description: Excludes specifies what to exclude from
+                                  limitation of access to resources (Sources and/or
+                                  Resources)
+                                items:
+                                  description: RateLimiterExcludeRule struct defines
+                                    the Activity Tracking/Violation Rating exclude
+                                    pattern
+                                  properties:
+                                    isResourceRegex:
+                                      description: When true, resource is regex. When
+                                        false, resource is string treated as 'path'
+                                        to be excluded.
+                                      type: boolean
+                                    resource:
+                                      description: Resource specifies the resource(s)
+                                        which would be excluded from protection
+                                      type: string
+                                    source:
+                                      description: Source specifies the source(s)
+                                        which would be excluded from protection
+                                      type: string
+                                  type: object
+                                type: array
+                              httpResponseCode:
+                                description: HttpResponseCode specifies a custom HTTP
+                                  response code to return when an activity tracking
+                                  violation occurs.
+                                format: int32
+                                type: integer
+                              ignoreStaticWithParams:
+                                description: IgnoreStaticWithParams determines if
+                                  requests to static content with parameters should
+                                  be ignored
+                                type: boolean
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              rate:
+                                description: Rate specifies the number of HTTP transactions
+                                  a single source can perform during the specified
+                                  unit of time.
+                                pattern: ^[1-9][0-9]*[smhd]$
+                                type: string
+                              rateSyncFrequency:
+                                description: |-
+                                  RateSyncFrequency specifies how often request rates are synchronized with upstream cache (e.g. '10' means synchronization occurs every 10 requests) - It's allowed to be set only when not setting blockPeriod.
+                                  If configured smaller than 1 or omitted, 1 will be used instead.
+                                format: int32
+                                type: integer
+                              reportMode:
+                                description: ReportMode controls the protection's
+                                  Security Event reporting mode - All (default), First,
+                                  None
+                                enum:
+                                - All
+                                - First
+                                - None
+                                type: string
+                            required:
+                            - rate
+                            type: object
+                          actorAnomalies:
+                            description: |-
+                              ActorAnomaliesConfig holds the configuration of the actor anomalies detection module.
+                              An anomaly detection is defined per each pair of primary and secondary actor.
+                              For example, a primary actor with two secondary actors defines two anomaly detections.
+                            properties:
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              primaryActors:
+                                description: Primary actors
+                                items:
+                                  properties:
+                                    actorID:
+                                      description: |-
+                                        Primary Actor ID is either "ActorID" or "SourceIP". Can't use both.
+                                        Actor ID
+                                      properties:
+                                        name:
+                                          description: Name is the k8s resource name
+                                          maxLength: 63
+                                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                          type: string
+                                        namespace:
+                                          description: Namespace is the k8s resource
+                                            namespace. if empty inherits from referrer
+                                          maxLength: 63
+                                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                          type: string
+                                      required:
+                                      - name
+                                      type: object
+                                    secondaryActors:
+                                      description: Secondary anomaly actors - each
+                                        secondary actor defines an anomaly detection
+                                        for the primary to secondary pair
+                                      items:
+                                        properties:
+                                          actorID:
+                                            description: |-
+                                              Secondary Actor ID is either "ActorID" or "SourceIP". Can't use both.
+                                              Actor ID
+                                            properties:
+                                              name:
+                                                description: Name is the k8s resource
+                                                  name
+                                                maxLength: 63
+                                                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                                type: string
+                                              namespace:
+                                                description: Namespace is the k8s
+                                                  resource namespace. if empty inherits
+                                                  from referrer
+                                                maxLength: 63
+                                                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                                type: string
+                                            required:
+                                            - name
+                                            type: object
+                                          blockPeriod:
+                                            description: Block Period defines the
+                                              block period after an anomaly is detected
+                                            pattern: ^[0-9]+[smhd]$
+                                            type: string
+                                          cardinality:
+                                            description: Cardinality defines the rate
+                                              of unique secondary actor values allowed
+                                              per single primary actor value
+                                            pattern: ^[1-9][0-9]*[smhd]$
+                                            type: string
+                                          disable:
+                                            description: Disable anomaly detection
+                                              for this pair
+                                            type: boolean
+                                          excludes:
+                                            description: Excludes defines which primary
+                                              actor values will be excluded
+                                            items:
+                                              description: RateLimiterExcludeRule
+                                                struct defines the Activity Tracking/Violation
+                                                Rating exclude pattern
+                                              properties:
+                                                isResourceRegex:
+                                                  description: When true, resource
+                                                    is regex. When false, resource
+                                                    is string treated as 'path' to
+                                                    be excluded.
+                                                  type: boolean
+                                                resource:
+                                                  description: Resource specifies
+                                                    the resource(s) which would be
+                                                    excluded from protection
+                                                  type: string
+                                                source:
+                                                  description: Source specifies the
+                                                    source(s) which would be excluded
+                                                    from protection
+                                                  type: string
+                                              type: object
+                                            type: array
+                                          sourceIP:
+                                            description: Source IP = true defines
+                                              source ip is the secondary actor
+                                            type: boolean
+                                        required:
+                                        - blockPeriod
+                                        - cardinality
+                                        type: object
+                                      minItems: 1
+                                      type: array
+                                    sourceIP:
+                                      description: Source IP = true defines source
+                                        ip is the primary actor
+                                      type: boolean
+                                  required:
+                                  - secondaryActors
+                                  type: object
+                                type: array
+                              reportMode:
+                                description: ReportMode controls the protection's
+                                  Security Event reporting mode - All (default), First,
+                                  None
+                                enum:
+                                - All
+                                - First
+                                - None
+                                type: string
+                            type: object
+                          apiSecurity:
+                            description: APISecurityConfig holds the configuration
+                              of the API Security module
+                            properties:
+                              absolute:
+                                description: absolute indicates whether the paths
+                                  are relative or absolute (default FALSE - paths
+                                  are relative)
+                                type: boolean
+                              apiDiscovery:
+                                description: ApiDiscovery enable\disable apiDiscovery
+                                  feature
+                                type: boolean
+                              apiSpec:
+                                description: apiSpec point to an APISpec CR that holds
+                                  all user changes - This APISpec CR point to an OpenAPI
+                                  CR which holds the entire openapi schema
+                                type: string
+                              apiSpecNamespace:
+                                description: namespace where APISpec CR is defined
+                                type: string
+                              caseInsensitive:
+                                description: |-
+                                  caseInsensitive indicates whether to enable or disable case sensitivity when checking endpoints.
+                                  (default false - endpoins are case-sensitive)
+                                type: boolean
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              preflight:
+                                description: preflight indicates whether to allow
+                                  preflight (OPTIONS http method) requests. (default
+                                  false)
+                                type: boolean
+                              strictPath:
+                                description: |-
+                                  strictPath indicates whether to strictly enforce API Endpoints; so a request to an undefined endpoint will generate a security event.
+                                  (default false - request to an undefined endpoint will not generate a security event)
+                                type: boolean
+                            type: object
+                          customHttpResponseCodeOverride:
+                            description: CustomHttpResponseCodeOverride allows you
+                              to define how the HTTP response code is handled when
+                              multiple violations are detected.
+                            type: boolean
+                          dlp:
+                            description: DLPConfig holds the configuration of the
+                              DLP module
+                            properties:
+                              ignoreTags:
+                                description: IgnoreTags [for future use] - controls
+                                  whether to scan HTML Tag attributes. The default
+                                  is false - meaning the entire content including
+                                  tag attributes will be scanned
+                                type: boolean
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              patterns:
+                                items:
+                                  description: DLPPattern holds the regex or literal
+                                    terms to search for in the response.
+                                  properties:
+                                    custom:
+                                      description: CustomPattern specifies a named
+                                        regex or literal to search for in the response.
+                                      properties:
+                                        isRegex:
+                                          type: boolean
+                                        name:
+                                          type: string
+                                        value:
+                                          type: string
+                                      required:
+                                      - name
+                                      - value
+                                      type: object
+                                    excludes:
+                                      items:
+                                        description: ExcludePattern defines match
+                                          entities that should be excluded from the
+                                          protection
+                                        properties:
+                                          page:
+                                            description: Page specifies the page(s)
+                                              which should be excluded from the protection
+                                            properties:
+                                              isRegex:
+                                                type: boolean
+                                              value:
+                                                type: string
+                                            type: object
+                                          prefix:
+                                            description: Prefix [for future use]
+                                            properties:
+                                              isRegex:
+                                                type: boolean
+                                              value:
+                                                type: string
+                                            type: object
+                                          suffix:
+                                            description: Suffix [for future use]
+                                            properties:
+                                              isRegex:
+                                                type: boolean
+                                              value:
+                                                type: string
+                                            type: object
+                                        type: object
+                                      type: array
+                                    predefined:
+                                      description: PredefinedPattern specifies a pattern
+                                        type defined in the system to search for in
+                                        the response - CCN,SSN, ILID
+                                      enum:
+                                      - CCN
+                                      - SSN
+                                      - ILID
+                                      type: string
+                                  type: object
+                                type: array
+                              redactionChar:
+                                description: RedactionChar specifies the character
+                                  to use for redaction of the text matching a defined
+                                  pattern
+                                maxLength: 1
+                                type: string
+                            type: object
+                          expressions:
+                            description: ExpressionsConfig holds the configuration
+                              of the expressions module
+                            properties:
+                              advExcludes:
+                                description: AdvExcludes specifies exclude definitions
+                                  for the expressions protections
+                                items:
+                                  description: ExpAdvExclude exclude definitions for
+                                    the expressions protections
+                                  properties:
+                                    parameter:
+                                      description: Parameter specifies the parameter
+                                        name and values where the match is
+                                      properties:
+                                        is_regex:
+                                          type: boolean
+                                        name:
+                                          type: string
+                                        values:
+                                          items:
+                                            description: PatternsExcludeParameterValue
+                                              contains regular expression or the absolute
+                                              value of the parameter
+                                            properties:
+                                              is_regex:
+                                                type: boolean
+                                              value:
+                                                type: string
+                                            type: object
+                                          type: array
+                                      required:
+                                      - name
+                                      type: object
+                                    path:
+                                      description: Path specifies the path where the
+                                        match is
+                                      properties:
+                                        is_regex:
+                                          type: boolean
+                                        value:
+                                          type: string
+                                      required:
+                                      - value
+                                      type: object
+                                    ruleIDs:
+                                      description: RuleIDs holds all the rule IDs
+                                        which the specific propertires apply to
+                                      items:
+                                        type: string
+                                      minItems: 1
+                                      type: array
+                                    zone:
+                                      description: Zone specifies the zone of the
+                                        match
+                                      enum:
+                                      - headers
+                                      - parameters
+                                      type: string
+                                  required:
+                                  - ruleIDs
+                                  type: object
+                                type: array
+                              customHeaders:
+                                description: CustomHeaders determines whether to use
+                                  a predefined headers list or a user created one
+                                  (defined in HeadersToScan).
+                                type: boolean
+                              disableHeaderScanning:
+                                description: DisableHeaderScanning specifies whether
+                                  to completely disable header scanning or not - when
+                                  excludes are enabled we still scan but don't report
+                                  or block, this flag will completely disable the
+                                  scanning for headers
+                                type: boolean
+                              headersToScan:
+                                description: HeadersToScan specifies a list of header
+                                  to scan in case that CustomHeaders is TRUE
+                                items:
+                                  type: string
+                                type: array
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              priority:
+                                description: Priority defines inspection order - higher
+                                  priority runs before lower priority
+                                format: int32
+                                type: integer
+                              scanBodyParamNames:
+                                description: ScanBodyParamNames specifies whether
+                                  to scan body parmeter names or not.
+                                type: boolean
+                              weight:
+                                description: Weight is used to calculate the security
+                                  module's max latency out of all the enabled modules
+                                format: int32
+                                minimum: 0
+                                type: integer
+                            type: object
+                          fileUpload:
+                            description: FileUploadConfig holds the configuration
+                              of the file upload module
+                            properties:
+                              extensions:
+                                description: files extensions list to verify
+                                items:
+                                  type: string
+                                minItems: 1
+                                type: array
+                              listType:
+                                description: extensions list type - deny/allow
+                                enum:
+                                - Deny
+                                - Allow
+                                type: string
+                              maxFilenameLength:
+                                description: max length allowed for a filename
+                                format: int32
+                                minimum: 0
+                                type: integer
+                              maxPathLength:
+                                description: max length allowed for a full path (including
+                                  filename)
+                                format: int32
+                                minimum: 0
+                                type: integer
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              priority:
+                                description: Priority defines inspection order - higher
+                                  priority runs before lower priority
+                                format: int32
+                                type: integer
+                            required:
+                            - extensions
+                            - listType
+                            type: object
+                          id:
+                            pattern: ^[a-zA-Z0-9-_]+$
+                            type: string
+                          jwt:
+                            description: JwtConfig holds the configuration of the
+                              jwt module
+                            properties:
+                              excludes:
+                                items:
+                                  properties:
+                                    path:
+                                      description: Path specifies the path where the
+                                        match is
+                                      properties:
+                                        is_regex:
+                                          type: boolean
+                                        value:
+                                          type: string
+                                      required:
+                                      - value
+                                      type: object
+                                    ruleIDs:
+                                      description: RuleIDs holds all unique rule IDs
+                                        which the specific propertires apply to
+                                      items:
+                                        type: string
+                                      minItems: 1
+                                      type: array
+                                  required:
+                                  - ruleIDs
+                                  type: object
+                                type: array
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              priority:
+                                description: Priority defines inspection order - higher
+                                  priority runs before lower priority
+                                format: int32
+                                type: integer
+                            type: object
+                          patterns:
+                            description: PatternsConfig holds the configuration of
+                              the patterns module
+                            properties:
+                              excludes:
+                                description: Excludes specifies a list of groups and/or
+                                  specific patterns which are excluded from the protection
+                                items:
+                                  properties:
+                                    ids:
+                                      description: Ids holds all the groups/patterns
+                                        IDs which the specific excludes propertires
+                                        apply to
+                                      items:
+                                        description: PatternsExcludeId contains one
+                                          pattern or one PatternGroup id
+                                        properties:
+                                          group:
+                                            description: PatternsGroupId contains
+                                              name and namesapce of the PatternGroup
+                                            properties:
+                                              forcedOpMode:
+                                                default: Inherit
+                                                description: ForcedOpMode specifies
+                                                  if Global Opmode is forcefully overwritten
+                                                  for a specific pattern
+                                                enum:
+                                                - Inherit
+                                                - Active
+                                                - Passive
+                                                type: string
+                                              name:
+                                                pattern: ^([0-9a-zA-Z_-]+|\*){1}$
+                                                type: string
+                                              namespace:
+                                                pattern: ^([0-9a-zA-Z_-]+|\*){1}$
+                                                type: string
+                                            required:
+                                            - name
+                                            - namespace
+                                            type: object
+                                          patternId:
+                                            type: string
+                                        required:
+                                        - group
+                                        type: object
+                                      minItems: 1
+                                      type: array
+                                    parameter:
+                                      description: Parameter specifies the parameter
+                                        name and values where the match is
+                                      properties:
+                                        is_regex:
+                                          type: boolean
+                                        name:
+                                          type: string
+                                        values:
+                                          items:
+                                            description: PatternsExcludeParameterValue
+                                              contains regular expression or the absolute
+                                              value of the parameter
+                                            properties:
+                                              is_regex:
+                                                type: boolean
+                                              value:
+                                                type: string
+                                            type: object
+                                          type: array
+                                      required:
+                                      - name
+                                      type: object
+                                    path:
+                                      description: Parameter specifies the path where
+                                        the match is
+                                      properties:
+                                        is_regex:
+                                          type: boolean
+                                        value:
+                                          type: string
+                                      required:
+                                      - value
+                                      type: object
+                                    zone:
+                                      description: Zone specifies the zone of the
+                                        match
+                                      enum:
+                                      - uri
+                                      - headers
+                                      - body
+                                      - parameters
+                                      type: string
+                                  required:
+                                  - ids
+                                  type: object
+                                type: array
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              patternsGroupIds:
+                                description: Ids specifies definitions for the patterns
+                                  protections
+                                items:
+                                  description: PatternsGroupId contains name and namesapce
+                                    of the PatternGroup
+                                  properties:
+                                    forcedOpMode:
+                                      default: Inherit
+                                      description: ForcedOpMode specifies if Global
+                                        Opmode is forcefully overwritten for a specific
+                                        pattern
+                                      enum:
+                                      - Inherit
+                                      - Active
+                                      - Passive
+                                      type: string
+                                    name:
+                                      pattern: ^([0-9a-zA-Z_-]+|\*){1}$
+                                      type: string
+                                    namespace:
+                                      pattern: ^([0-9a-zA-Z_-]+|\*){1}$
+                                      type: string
+                                  required:
+                                  - name
+                                  - namespace
+                                  type: object
+                                type: array
+                              priority:
+                                description: Priority defines inspection order - higher
+                                  priority runs before lower priority
+                                format: int32
+                                type: integer
+                              scanBodyParamNames:
+                                description: ScanBodyParamNames specifies whether
+                                  to scan body parameter names or not.
+                                type: boolean
+                              weight:
+                                description: Weight is used to calculate the security
+                                  module's max latency out of all the enabled modules
+                                format: int32
+                                minimum: 0
+                                type: integer
+                            type: object
+                          responseTracking:
+                            description: ResponseTrackingConfig holds the configuration
+                              of the response tracking module
+                            properties:
+                              actors:
+                                items:
+                                  description: ActorResponseTracking defines the response
+                                    tracking for a given actor
+                                  properties:
+                                    disable:
+                                      description: Determines if to disable rate counting
+                                        for this actor
+                                      type: boolean
+                                    excludes:
+                                      description: Excludes defines an exclude list
+                                        for the actor
+                                      items:
+                                        description: ResponseTrackingExcludeRule struct
+                                          defines the Response Tracking exclude pattern
+                                        properties:
+                                          isResourceRegex:
+                                            description: When true, resource is regex.
+                                              When false, resource is string treated
+                                              as 'path' to be excluded.
+                                            type: boolean
+                                          resource:
+                                            description: Resource specifies the resource(s)
+                                              which would be excluded from protection
+                                            type: string
+                                          ruleNames:
+                                            description: RuleNames specifies list
+                                              of rule names that the exclude refers
+                                              to ('all' if empty)
+                                            items:
+                                              type: string
+                                            type: array
+                                          source:
+                                            description: Source specifies the source(s)
+                                              which would be excluded from protection
+                                            type: string
+                                        type: object
+                                      type: array
+                                    name:
+                                      description: Name is the k8s resource name
+                                      maxLength: 63
+                                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                      type: string
+                                    namespace:
+                                      description: Namespace is the k8s resource namespace.
+                                        if empty inherits from referrer
+                                      maxLength: 63
+                                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                      type: string
+                                    rules:
+                                      description: Rules defines the response tracking
+                                        rules for the actor
+                                      items:
+                                        description: ResponseTrackingRule defines
+                                          the rating rules for a response field
+                                        properties:
+                                          blockPeriod:
+                                            pattern: ^[1-9][0-9]*[smhd]$
+                                            type: string
+                                          field:
+                                            description: Field is the response field
+                                              the rule refers to
+                                            type: string
+                                          groupBy:
+                                            description: ResponseTrackingGroupBy defines
+                                              the grouping method to perform on response
+                                              values - Exact/Prefix
+                                            enum:
+                                            - Exact
+                                            - Prefix
+                                            type: string
+                                          name:
+                                            type: string
+                                          rate:
+                                            pattern: ^[1-9][0-9]*[smhd]$
+                                            type: string
+                                          values:
+                                            description: Values are list of values
+                                              to match to the Field based on the GroupBy
+                                            items:
+                                              type: string
+                                            type: array
+                                        required:
+                                        - blockPeriod
+                                        - field
+                                        - name
+                                        - rate
+                                        type: object
+                                      type: array
+                                  required:
+                                  - name
+                                  type: object
+                                type: array
+                              countStatic:
+                                description: CountStatic determines if requests to
+                                  static content should be taken into account
+                                type: boolean
+                              disable:
+                                description: Disable determines if to disable rate
+                                  counting for source IP
+                                type: boolean
+                              excludes:
+                                description: Excludes defines an exclude list for
+                                  source IP
+                                items:
+                                  description: ResponseTrackingExcludeRule struct
+                                    defines the Response Tracking exclude pattern
+                                  properties:
+                                    isResourceRegex:
+                                      description: When true, resource is regex. When
+                                        false, resource is string treated as 'path'
+                                        to be excluded.
+                                      type: boolean
+                                    resource:
+                                      description: Resource specifies the resource(s)
+                                        which would be excluded from protection
+                                      type: string
+                                    ruleNames:
+                                      description: RuleNames specifies list of rule
+                                        names that the exclude refers to ('all' if
+                                        empty)
+                                      items:
+                                        type: string
+                                      type: array
+                                    source:
+                                      description: Source specifies the source(s)
+                                        which would be excluded from protection
+                                      type: string
+                                  type: object
+                                type: array
+                              ignoreStaticWithParams:
+                                description: IgnoreStaticWithParams determines if
+                                  requests to static content with parameters should
+                                  be ignored
+                                type: boolean
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              reportMode:
+                                description: ReportMode controls the protection's
+                                  Security Event reporting mode - All (default), First,
+                                  None
+                                enum:
+                                - All
+                                - First
+                                - None
+                                type: string
+                              rules:
+                                description: Rules defines the response tracking rule
+                                  list for aource IP
+                                items:
+                                  description: ResponseTrackingRule defines the rating
+                                    rules for a response field
+                                  properties:
+                                    blockPeriod:
+                                      pattern: ^[1-9][0-9]*[smhd]$
+                                      type: string
+                                    field:
+                                      description: Field is the response field the
+                                        rule refers to
+                                      type: string
+                                    groupBy:
+                                      description: ResponseTrackingGroupBy defines
+                                        the grouping method to perform on response
+                                        values - Exact/Prefix
+                                      enum:
+                                      - Exact
+                                      - Prefix
+                                      type: string
+                                    name:
+                                      type: string
+                                    rate:
+                                      pattern: ^[1-9][0-9]*[smhd]$
+                                      type: string
+                                    values:
+                                      description: Values are list of values to match
+                                        to the Field based on the GroupBy
+                                      items:
+                                        type: string
+                                      type: array
+                                  required:
+                                  - blockPeriod
+                                  - field
+                                  - name
+                                  - rate
+                                  type: object
+                                type: array
+                            type: object
+                          rfcValidation:
+                            description: RfcValidation controls behavior when the
+                              enforcer encounters a parsing error
+                            properties:
+                              action:
+                                description: |-
+                                  Action controls how the enforcer behaves when it encounters a parsing error.
+                                  Block (default) - blocks the request.
+                                  Skip - skips the parsing problematic zone and continues to process the request.
+                                enum:
+                                - Block
+                                - Skip
+                                type: string
+                              report:
+                                description: |-
+                                  Report controls whether or not the enforcer creates a security event when it encounters a parsing error.
+                                  Always (default) - enforcer creates a security event for a parsing error.
+                                  Never - enforcer does not create a security event for a parsing error.
+                                enum:
+                                - Always
+                                - Never
+                                type: string
+                              unsupportedCompression:
+                                description: UnsupportedCompression handling of the
+                                  request when the body is compressed using an unknown
+                                  compression algorithm
+                                properties:
+                                  disableBodyParsing:
+                                    description: DisableBodyParsing determines whether
+                                      to parse the request's body
+                                    type: boolean
+                                  report:
+                                    description: Report determines whether to create
+                                      and report an RFC security event
+                                    type: boolean
+                                  status:
+                                    default: 200
+                                    description: |-
+                                      Status code to return in the response.
+                                      200 (default) - returns 200 OK.
+                                      403 - returns security page 403 Forbidden.
+                                      415 - returns 415 Unsupported Media Type.
+                                    enum:
+                                    - 200
+                                    - 403
+                                    - 415
+                                    type: integer
+                                type: object
+                              weight:
+                                description: Weight is used to calculate the security
+                                  module's max latency out of all the enabled modules
+                                format: int32
+                                minimum: 0
+                                type: integer
+                            type: object
+                          signatures:
+                            description: SignaturesConfig holds the configuration
+                              of the signatures module
+                            properties:
+                              advExcludes:
+                                description: AdvExcludes specifies exclude definitions
+                                  for the signatures protections
+                                items:
+                                  description: SigAdvExclude exclude definitions for
+                                    the signatures protections
+                                  properties:
+                                    parameter:
+                                      description: Parameter specifies the parameter
+                                        name and values where the match is
+                                      properties:
+                                        is_regex:
+                                          type: boolean
+                                        name:
+                                          type: string
+                                        values:
+                                          items:
+                                            description: PatternsExcludeParameterValue
+                                              contains regular expression or the absolute
+                                              value of the parameter
+                                            properties:
+                                              is_regex:
+                                                type: boolean
+                                              value:
+                                                type: string
+                                            type: object
+                                          type: array
+                                      required:
+                                      - name
+                                      type: object
+                                    path:
+                                      description: Parameter specifies the path where
+                                        the match is
+                                      properties:
+                                        is_regex:
+                                          type: boolean
+                                        value:
+                                          type: string
+                                      required:
+                                      - value
+                                      type: object
+                                    ruleIDs:
+                                      description: RuleIDs holds all the rule IDs
+                                        which the specific propertires apply to
+                                      items:
+                                        anyOf:
+                                        - type: integer
+                                        - type: string
+                                        x-kubernetes-int-or-string: true
+                                      minItems: 1
+                                      type: array
+                                    zone:
+                                      description: Zone specifies the zone of the
+                                        match
+                                      enum:
+                                      - uri
+                                      - headers
+                                      - body
+                                      - parameters
+                                      - filenames
+                                      type: string
+                                  required:
+                                  - ruleIDs
+                                  type: object
+                                type: array
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              priority:
+                                description: Priority defines inspection order - higher
+                                  priority runs before lower priority
+                                format: int32
+                                type: integer
+                              weight:
+                                description: Weight is used to calculate the security
+                                  module's max latency out of all the enabled modules
+                                format: int32
+                                minimum: 0
+                                type: integer
+                            type: object
+                          violationRating:
+                            description: ViolationRating analyzes the behavior of
+                              a Source and protect against suspicious behaviors. It
+                              aggregates a Global violations score per Source from
+                              a configurable scores per protection.
+                            properties:
+                              actors:
+                                description: Actors specifies the Actors on which
+                                  to perform violation rating.
+                                items:
+                                  description: ViolationRating configuration of actors
+                                  properties:
+                                    blockPeriod:
+                                      description: BlockPeriod specifies the amount
+                                        of time the source will be blocked when exceeding
+                                        the Threshold.
+                                      pattern: ^[0-9]+[smhd]$
+                                      type: string
+                                    disable:
+                                      description: Determines if to disable rate counting
+                                        for the actor
+                                      type: boolean
+                                    excludes:
+                                      description: Excludes specifies the Source and/or
+                                        Path (resource) that are excluded from violationRating
+                                        enforcement.
+                                      items:
+                                        description: RateLimiterExcludeRule struct
+                                          defines the Activity Tracking/Violation
+                                          Rating exclude pattern
+                                        properties:
+                                          isResourceRegex:
+                                            description: When true, resource is regex.
+                                              When false, resource is string treated
+                                              as 'path' to be excluded.
+                                            type: boolean
+                                          resource:
+                                            description: Resource specifies the resource(s)
+                                              which would be excluded from protection
+                                            type: string
+                                          source:
+                                            description: Source specifies the source(s)
+                                              which would be excluded from protection
+                                            type: string
+                                        type: object
+                                      type: array
+                                    name:
+                                      description: Name is the k8s resource name
+                                      maxLength: 63
+                                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                      type: string
+                                    namespace:
+                                      description: Namespace is the k8s resource namespace.
+                                        if empty inherits from referrer
+                                      maxLength: 63
+                                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                      type: string
+                                    threshold:
+                                      description: Threshold specifies the aggregated
+                                        violation score for a single source performed
+                                        during the selected unit of time.
+                                      pattern: ^[1-9][0-9]*[smhd]$
+                                      type: string
+                                  required:
+                                  - name
+                                  type: object
+                                type: array
+                              blockPeriod:
+                                description: BlockPeriod specifies the amount of time
+                                  the source will be blocked when exceeding the Threshold.
+                                pattern: ^[0-9]+[smhd]$
+                                type: string
+                              disable:
+                                description: Determines if to disable rate counting
+                                  for source IP
+                                type: boolean
+                              excludes:
+                                description: Excludes specifies the Source and/or
+                                  Path (resource) that are excluded from violationRating
+                                  enforcement.
+                                items:
+                                  description: RateLimiterExcludeRule struct defines
+                                    the Activity Tracking/Violation Rating exclude
+                                    pattern
+                                  properties:
+                                    isResourceRegex:
+                                      description: When true, resource is regex. When
+                                        false, resource is string treated as 'path'
+                                        to be excluded.
+                                      type: boolean
+                                    resource:
+                                      description: Resource specifies the resource(s)
+                                        which would be excluded from protection
+                                      type: string
+                                    source:
+                                      description: Source specifies the source(s)
+                                        which would be excluded from protection
+                                      type: string
+                                  type: object
+                                type: array
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              protections:
+                                description: 'Protections specifies the violation
+                                  score per protection: Low=1 Medium=3 High=5 or Disabled.'
+                                properties:
+                                  activityTracking:
+                                    description: Violation rating levels per protection
+                                      module
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  actorAnomalies:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  apiSecurity:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  dlp:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  expressions:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  fileUpload:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  jwt:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  patterns:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  quotaManagement:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  responseTracking:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  rfcValidation:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  signatures:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                  whitelist:
+                                    description: ViolationRatingLevel controls penalty
+                                      score level for every protection - Low(default),
+                                      Medium, High or Disabled
+                                    enum:
+                                    - Low
+                                    - Medium
+                                    - High
+                                    - Disabled
+                                    type: string
+                                type: object
+                              reportMode:
+                                description: ReportMode controls the protection's
+                                  Security Event reporting mode - All (default), First,
+                                  None
+                                enum:
+                                - All
+                                - First
+                                - None
+                                type: string
+                              threshold:
+                                description: Threshold specifies the aggregated violation
+                                  score for a single source performed during the selected
+                                  unit of time.
+                                pattern: ^[1-9][0-9]*[smhd]$
+                                type: string
+                            required:
+                            - blockPeriod
+                            - threshold
+                            type: object
+                          webddos:
+                            description: |-
+                              WebddosConfig controls enabling Webddos protection for specific Actor/s (aka 'Host' actor) that have to be also
+                              activated in ActivityTracking protection
+                            properties:
+                              actors:
+                                description: |-
+                                  Actors specifies the Actors for which to make a webddos protection.
+                                  These actor/s should also be defined in ActivityTracking and ActivityTracking protection for them should
+                                  be activated (not bypass/disabled)
+                                items:
+                                  properties:
+                                    name:
+                                      description: Name is the k8s resource name
+                                      maxLength: 63
+                                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                      type: string
+                                    namespace:
+                                      description: Namespace is the k8s resource namespace.
+                                        if empty inherits from referrer
+                                      maxLength: 63
+                                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                      type: string
+                                  required:
+                                  - name
+                                  type: object
+                                minItems: 1
+                                type: array
+                              opMode:
+                                default: Bypass
+                                description: OpMode sets opMode for the webddos protection
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                            required:
+                            - actors
+                            type: object
+                          whitelist:
+                            description: WhitelistConfig holds configuration for the
+                              whitelist module
+                            properties:
+                              excludes:
+                                items:
+                                  description: RequestMatch defines a list of parameters
+                                    for matching specific requests to exclude/include
+                                  properties:
+                                    isPatternRelative:
+                                      description: IsPatternRelative boolean flag
+                                        that specifies if the pattern is relative
+                                        to the classifier or not
+                                      type: boolean
+                                    isRegex:
+                                      description: IsRegex boolean flag that specifies
+                                        if the pattern is or is not a regular expression
+                                      type: boolean
+                                    methods:
+                                      description: An empty list is not allowed
+                                      items:
+                                        description: Method is allowed HTTP Request
+                                          method.
+                                        enum:
+                                        - ANY
+                                        - GET
+                                        - POST
+                                        - PUT
+                                        - DELETE
+                                        - PATCH
+                                        - OPTIONS
+                                        - HEAD
+                                        - CONNECT
+                                        - TRACE
+                                        type: string
+                                      minItems: 1
+                                      type: array
+                                    pattern:
+                                      description: |-
+                                        Pattern specifies the allowed request URI.
+                                        It can be a literal string, a string containing wildcards (like *.html) or
+                                        if specified by IsRegex below, a regular expression.
+                                      type: string
+                                  required:
+                                  - methods
+                                  - pattern
+                                  type: object
+                                type: array
+                              opMode:
+                                default: Bypass
+                                description: OpMode controls the protection's operation
+                                  mode - Bypass (default), Active or Passive
+                                enum:
+                                - Bypass
+                                - Active
+                                - Passive
+                                type: string
+                              priority:
+                                description: Priority defines inspection order - higher
+                                  priority runs before lower priority
+                                format: int32
+                                type: integer
+                            type: object
+                        required:
+                        - id
+                        type: object
+                      minItems: 1
+                      type: array
+                    tokenValidationId:
+                      description: TokenValidationID the Name/Namespace of TokenValidation
+                        CR that is attached to this policy
+                      properties:
+                        name:
+                          maxLength: 63
+                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                          type: string
+                        namespace:
+                          maxLength: 63
+                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                          type: string
+                      required:
+                      - name
+                      type: object
+                  required:
+                  - classifiers
+                  - name
+                  - protections
+                  type: object
+                minItems: 1
+                type: array
+              version:
+                description: Version the resource version
+                type: string
+            required:
+            - policies
+            type: object
+          status:
+            description: ProfileStatus security policy status definition
+            properties:
+              hash:
+                type: string
+              lastUpdate:
+                format: date-time
+                type: string
+              message:
+                type: string
+              state:
+                description: ProfileState is an enum for the possible policy states
+                type: string
+            required:
+            - hash
+            - lastUpdate
+            - state
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
