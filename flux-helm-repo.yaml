@@ -1,4 +1,4 @@
-apiVersion: source.toolkit.fluxcd.io/v1beta2
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: waas-charts
@@ -6,6 +6,6 @@ metadata:
 spec:
   url: oci://localhost/waas_helms/waas
   interval: 1m
-  type: oci
+  type: "oci"
   # secretRef:
   #   name: waas-helm-charts
