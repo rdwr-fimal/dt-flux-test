@@ -85,19 +85,19 @@ spec:
           volumes:
         clients:
           logagent:
-            enabled: off
+            enabled: false
             mounts:
             volumes:
           nats:
-            enabled: off
+            enabled: false
             mounts:
             volumes:
           fluentbit:
-            enabled: off
+            enabled: false
             mounts:
             volumes:
           rateLimiter:
-            enabled: off
+            enabled: false
             mounts:
             volumes:
 
@@ -109,7 +109,7 @@ spec:
         clients:
           logagent:
             logstash:
-              enabled: off
+              enabled: false
               mounts:
               volumes:
             nats:
@@ -117,15 +117,15 @@ spec:
               mounts:
               volumes:
           fluentbit:
-            enabled: off
+            enabled: false
             mounts:
             volumes:
           rateLimiter:
-            enabled: off
+            enabled: false
             mounts:
             volumes:
           controller:
-            enabled: off
+            enabled: false
             mounts:
             volumes:
 
