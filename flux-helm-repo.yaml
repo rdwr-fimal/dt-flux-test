@@ -4,7 +4,7 @@ metadata:
   name: waas-charts
   namespace: kwaf
 spec:
-  url: https://artifactory.devops.telekom.de/artifactory/dtt-taomy-taomy07-dev-helm
+  url: https://artifactory.devops.telekom.de/artifactory/dtt-taomy-taomy07-dev-helm/
   interval: 1m
   secretRef:
     name: helm-repo-cred
