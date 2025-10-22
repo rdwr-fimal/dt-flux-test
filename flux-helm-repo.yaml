@@ -65,15 +65,15 @@ spec:
           volumes:
         clients:
           redis:
-            enabled: off
+            enabled: false
             mounts:
             volumes:
           rateLimiter:
-            enabled: off
+            enabled: false
             mounts:
             volumes:
           controller:
-            enabled: off
+            enabled: false
             mounts:
             volumes:
 
