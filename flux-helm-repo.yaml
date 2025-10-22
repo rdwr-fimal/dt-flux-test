@@ -19,8 +19,8 @@ spec:
   interval: 1m
   chart:
     spec:
-      chart: waas_helm3
-      version: 1.22.0
+      chart: waas
+      version: "1.22.0"
       sourceRef:
         kind: HelmRepository
         name: waas-charts
