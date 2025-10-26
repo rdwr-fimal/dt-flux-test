@@ -4,10 +4,10 @@ metadata:
   name: waas-charts
   namespace: kwaf
 spec:
-  url: https://artifactory.devops.telekom.de/artifactory/dtt-taomy-taomy07-dev-helm/
+  url: http://altartifactory:8081/artifactory/waas-helm-virtual-alt
   interval: 1m
-  secretRef:
-    name: helm-repo-cred
+  # secretRef:
+  #   name: helm-repo-cred
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -20,7 +20,7 @@ spec:
   chart:
     spec:
       chart: waas
-      version: "1.21.0"
+      version: "1.22.0-latest"
       sourceRef:
         kind: HelmRepository
         name: waas-charts
@@ -35,7 +35,7 @@ spec:
       image:
         pullPolicy: IfNotPresent
         registry: devart01:8081/waas-img-reg
-        version: :1.21.0
+        version: :1.22.0
       signaturesImage:
         registry: devart01:8081/signatures-release-docker
         version: :553
