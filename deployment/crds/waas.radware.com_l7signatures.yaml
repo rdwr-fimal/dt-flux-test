@@ -1,0 +1,325 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: l7signatures.waas.radware.com
+spec:
+  group: waas.radware.com
+  names:
+    categories:
+    - kwaf
+    - waas
+    kind: L7Signature
+    listKind: L7SignatureList
+    plural: l7signatures
+    shortNames:
+    - sig
+    singular: l7signature
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    - jsonPath: .status.hash
+      name: HashVer
+      type: string
+    - jsonPath: .status.lastUpdate
+      name: Age
+      type: date
+    - jsonPath: .status.profileID
+      name: ProfileID
+      priority: 1
+      type: string
+    - jsonPath: .spec.poID.policy
+      name: Policy
+      priority: 1
+      type: string
+    - jsonPath: .spec.poID.classifier
+      name: Classifier
+      priority: 1
+      type: string
+    - jsonPath: .spec.poID.protection
+      name: Protection
+      priority: 1
+      type: string
+    - jsonPath: .spec.poID.actorNamespace
+      name: ActorNamespace
+      priority: 1
+      type: string
+    - jsonPath: .spec.poID.actorName
+      name: ActorName
+      priority: 1
+      type: string
+    - jsonPath: .spec.poID.actorValue
+      name: ActorValue
+      priority: 1
+      type: string
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: L7Signature is the custom resource containing L7DDOS signatures
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: L7SignatureSpec - signature specification
+            properties:
+              ignoredHeaders:
+                description: IgnoredHeaders - list of headers ignored for the 'unknown'
+                  pattern
+                items:
+                  properties:
+                    matchType:
+                      enum:
+                      - Exact
+                      - Prefix
+                      type: string
+                    value:
+                      description: Value is a target string value to match against.
+                      type: string
+                  type: object
+                type: array
+              knownHeaders:
+                description: KnownHeaders - list of headers used for 'knownHeaders'
+                  and 'unknownHeaders' rule types
+                items:
+                  properties:
+                    matchType:
+                      enum:
+                      - Exact
+                      - Prefix
+                      type: string
+                    value:
+                      description: Value is a target string value to match against.
+                      type: string
+                  type: object
+                type: array
+              patterns:
+                description: Patterns - list of patterns (relation between patterns
+                  is OR).
+                items:
+                  description: L7Pattern is a list of Rules (relation between rule
+                    when evaluating signature is AND)
+                  properties:
+                    allowedMisses:
+                      description: AllowedMisses denote how many of the rules can
+                        fail to match while the pattern as a whole is still considered
+                        matching
+                      type: integer
+                    rules:
+                      description: |-
+                        Rules is a list of L7Rule objects that define the conditions for this pattern.
+                        The relationship between the rules is AND, meaning all rules must match unless
+                        the AllowedMisses property permits some to fail.
+                      items:
+                        description: |-
+                          L7Rule defines a set of conditions to evaluate HTTP requests.
+                          Each rule specifies criteria such as HTTP methods, headers, cookies, and query arguments.
+                        properties:
+                          cookie:
+                            description: |-
+                              Cookie type of StringMatcher that denote if the cookie exists or doesn't exist in the request
+                              Example: [{name: "cookie1"}] - match only if a cookie named 'cookie1' exists
+                            properties:
+                              matchType:
+                                enum:
+                                - Exact
+                                - Prefix
+                                type: string
+                              value:
+                                description: Value is a target string value to match
+                                  against.
+                                type: string
+                            type: object
+                          cookiesCounts:
+                            description: |-
+                              CookiesCounts type lists numbers of cookies
+                              Example [3,5] - the request has 3 OR 5 cookies
+                            items:
+                              type: integer
+                            type: array
+                          header:
+                            description: |-
+                              Header type of StringMatcher that denote if the header exists or doesn't exist in the request
+                              Example: [{name: "x-header-", type: Prefix}, {name: "x-host-name", type: Exact}] - match only if a header starting with 'x-header-' OR 'x-host-name' exists
+                            properties:
+                              matchType:
+                                enum:
+                                - Exact
+                                - Prefix
+                                type: string
+                              value:
+                                description: Value is a target string value to match
+                                  against.
+                                type: string
+                            type: object
+                          knownHeadersCounts:
+                            description: |-
+                              KnownHeadersCounts type lists numbers of headers matching the known headers lists
+                              Example: [1,2] - the request has 1 OR 2 headers out of the 'known headers' list
+                            items:
+                              type: integer
+                            type: array
+                          methods:
+                            description: |-
+                              Methods type lists one or more HTTP methods
+                              Example: [GET, POST] - the request is either a GET request OR a POST request
+                            items:
+                              description: Method is allowed HTTP Request method.
+                              enum:
+                              - ANY
+                              - GET
+                              - POST
+                              - PUT
+                              - DELETE
+                              - PATCH
+                              - OPTIONS
+                              - HEAD
+                              - CONNECT
+                              - TRACE
+                              type: string
+                            type: array
+                          negative:
+                            description: |-
+                              Negative meant to evaluate the expression NOT(rule)
+                              Example: if PathSegmentsRule[0]=3 && Negative=true then path with segment count !=3 is matched
+                            type: boolean
+                          pathSegmentsCounts:
+                            description: |-
+                              PathSegmentsCounts rule type lists numbers of path segments
+                              Example: [1,2,3] - the request has 1 OR 2 OR 3 path segments
+                            items:
+                              type: integer
+                            type: array
+                          queryArg:
+                            description: |-
+                              QueryArg type of StringMatcher that denote if the query arg exists or doesn't exist in the request
+                              Example: [{name: "user"}] - match only if a query arg 'user' exists
+                            properties:
+                              matchType:
+                                enum:
+                                - Exact
+                                - Prefix
+                                type: string
+                              value:
+                                description: Value is a target string value to match
+                                  against.
+                                type: string
+                            type: object
+                          queryArgsCounts:
+                            description: |-
+                              QueryArgsCounts type lists numbers of query args
+                              Example: [4,5] - the request has 4 OR 5 query args
+                            items:
+                              type: integer
+                            type: array
+                          unknownHeadersCounts:
+                            description: |-
+                              UnknownHeadersCounts type lists numbers of headers matching the ignored headers lists
+                              Example: [3] - the request has 3 headers not in the 'known headers' OR 'ignored headers' lists
+                            items:
+                              type: integer
+                            type: array
+                        type: object
+                      type: array
+                  required:
+                  - rules
+                  type: object
+                type: array
+              poID:
+                description: PoID - Protected Object unique identifier to assign the
+                  signature
+                properties:
+                  actorName:
+                    description: ActorName is the name of the webddos protected actor
+                      by this signature.
+                    maxLength: 63
+                    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                    type: string
+                  actorNamespace:
+                    description: ActorNamespace is the namespace of the webddos protected
+                      actor by this signature.
+                    maxLength: 63
+                    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                    type: string
+                  actorValue:
+                    description: ActorValue is the value of the webddos protected
+                      actor by this signature.
+                    minLength: 1
+                    type: string
+                  classifier:
+                    description: Classifier is the name of the classifier this signature
+                      belongs to.
+                    minLength: 1
+                    type: string
+                  policy:
+                    description: Policy is the name of the policy this signature belongs
+                      to.
+                    minLength: 1
+                    type: string
+                  protection:
+                    description: Protection is the name of the protection this signature
+                      belongs to.
+                    minLength: 1
+                    type: string
+                required:
+                - actorName
+                - actorValue
+                - classifier
+                - policy
+                - protection
+                type: object
+            required:
+            - patterns
+            - poID
+            type: object
+          status:
+            description: L7SignatureStatus L7Signature status definition
+            properties:
+              hash:
+                type: string
+              lastUpdate:
+                format: date-time
+                type: string
+              message:
+                type: string
+              profileID:
+                type: string
+              state:
+                description: L7SignatureState is an enum for the possible Webddos
+                  Signature states
+                type: string
+            required:
+            - hash
+            - lastUpdate
+            - state
+            type: object
+        required:
+        - metadata
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
