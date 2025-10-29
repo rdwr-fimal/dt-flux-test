@@ -20,7 +20,7 @@ spec:
   chart:
     spec:
       chart: waas
-      version: "1.22.0-latest"
+      version: "1.21.0-latest"
       sourceRef:
         kind: HelmRepository
         name: waas-charts
@@ -38,7 +38,7 @@ spec:
       image:
         pullPolicy: IfNotPresent
         registry: devart01:8081/waas-img-reg
-        version: :1.22.0
+        version: :1.21.0
       signaturesImage:
         registry: devart01:8081/signatures-release-docker
         version: :553

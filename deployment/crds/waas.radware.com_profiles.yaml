@@ -107,8 +107,6 @@ spec:
                                 This struct holds header/cookie key-value match selectors.
                                 A Key and Value defines that there is a match if the header or cookie with the specified value exists.
                               properties:
-                                isRegex:
-                                  type: boolean
                                 key:
                                   type: string
                                 value:
@@ -285,13 +283,10 @@ spec:
                                         type: object
                                       type: array
                                     name:
-                                      description: Name is the k8s resource name
                                       maxLength: 63
                                       pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                       type: string
                                     namespace:
-                                      description: Namespace is the k8s resource namespace.
-                                        if empty inherits from referrer
                                       maxLength: 63
                                       pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                       type: string
@@ -433,13 +428,10 @@ spec:
                                         Actor ID
                                       properties:
                                         name:
-                                          description: Name is the k8s resource name
                                           maxLength: 63
                                           pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                           type: string
                                         namespace:
-                                          description: Namespace is the k8s resource
-                                            namespace. if empty inherits from referrer
                                           maxLength: 63
                                           pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                           type: string
@@ -458,15 +450,10 @@ spec:
                                               Actor ID
                                             properties:
                                               name:
-                                                description: Name is the k8s resource
-                                                  name
                                                 maxLength: 63
                                                 pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                                 type: string
                                               namespace:
-                                                description: Namespace is the k8s
-                                                  resource namespace. if empty inherits
-                                                  from referrer
                                                 maxLength: 63
                                                 pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                                 type: string
@@ -1071,13 +1058,10 @@ spec:
                                         type: object
                                       type: array
                                     name:
-                                      description: Name is the k8s resource name
                                       maxLength: 63
                                       pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                       type: string
                                     namespace:
-                                      description: Namespace is the k8s resource namespace.
-                                        if empty inherits from referrer
                                       maxLength: 63
                                       pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                       type: string
@@ -1418,13 +1402,10 @@ spec:
                                         type: object
                                       type: array
                                     name:
-                                      description: Name is the k8s resource name
                                       maxLength: 63
                                       pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                       type: string
                                     namespace:
-                                      description: Namespace is the k8s resource namespace.
-                                        if empty inherits from referrer
                                       maxLength: 63
                                       pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                                       type: string
@@ -1633,45 +1614,6 @@ spec:
                             - blockPeriod
                             - threshold
                             type: object
-                          webddos:
-                            description: |-
-                              WebddosConfig controls enabling Webddos protection for specific Actor/s (aka 'Host' actor) that have to be also
-                              activated in ActivityTracking protection
-                            properties:
-                              actors:
-                                description: |-
-                                  Actors specifies the Actors for which to make a webddos protection.
-                                  These actor/s should also be defined in ActivityTracking and ActivityTracking protection for them should
-                                  be activated (not bypass/disabled)
-                                items:
-                                  properties:
-                                    name:
-                                      description: Name is the k8s resource name
-                                      maxLength: 63
-                                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
-                                      type: string
-                                    namespace:
-                                      description: Namespace is the k8s resource namespace.
-                                        if empty inherits from referrer
-                                      maxLength: 63
-                                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
-                                      type: string
-                                  required:
-                                  - name
-                                  type: object
-                                minItems: 1
-                                type: array
-                              opMode:
-                                default: Bypass
-                                description: OpMode sets opMode for the webddos protection
-                                enum:
-                                - Bypass
-                                - Active
-                                - Passive
-                                type: string
-                            required:
-                            - actors
-                            type: object
                           whitelist:
                             description: WhitelistConfig holds configuration for the
                               whitelist module
@@ -1693,8 +1635,8 @@ spec:
                                     methods:
                                       description: An empty list is not allowed
                                       items:
-                                        description: Method is allowed HTTP Request
-                                          method.
+                                        description: Method is a list of allowed HTTP
+                                          Request methods.
                                         enum:
                                         - ANY
                                         - GET
