@@ -68,13 +68,10 @@ spec:
                         of actor
                       properties:
                         name:
-                          description: Name is the k8s resource name
                           maxLength: 63
                           pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                           type: string
                         namespace:
-                          description: Namespace is the k8s resource namespace. if
-                            empty inherits from referrer
                           maxLength: 63
                           pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                           type: string
